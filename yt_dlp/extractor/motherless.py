@@ -112,10 +112,13 @@ class MotherlessIE(InfoExtractor):
         video_id = self._match_id(url)
         webpage = self._download_webpage(url, video_id)
 
-        if any(p in webpage for p in (
+        found_strings = [p for p in (
                 '<title>404 - MOTHERLESS.COM<',
-                ">The page you're looking for cannot be found.<")):
-            raise ExtractorError(f'Video {video_id} does not exist', expected=True)
+                '<title>404 | MOTHERLESS.COM<',
+                ">The page you're looking for cannot be found.<",
+                "File not found. Nothing to see here!") if p in webpage]
+        if found_strings:
+            raise ExtractorError(f'Video {video_id} does not exist ({found_strings})', expected=True)
 
         if '>The content you are trying to view is for friends only.' in webpage:
             raise ExtractorError(f'Video {video_id} is for friends only', expected=True)
@@ -196,6 +199,13 @@ class MotherlessPaginatedIE(InfoExtractor):
         item_id = self._match_id(url)
         real_url = self._correct_path(url, item_id)
         webpage = self._download_webpage(real_url, item_id, 'Downloading page 1')
+
+        found_strings = [p for p in (
+                '<title>404 - MOTHERLESS.COM<',
+                '<title>404 | MOTHERLESS.COM<',
+                "File not Found. Nothing to see here!") if p in webpage]
+        if found_strings:
+            raise ExtractorError('Gallery %s does not exist (%s)' % (item_id, found_strings), expected=True)
 
         def get_page(idx):
             page = idx + 1
