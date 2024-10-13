@@ -11,6 +11,7 @@ import getpass
 import itertools
 import optparse
 import os
+import os.path
 import re
 import traceback
 
@@ -469,9 +470,9 @@ def validate_options(opts):
         opts.ffmpeg_location = expand_path(opts.ffmpeg_location)
 
     if opts.user_agent is not None:
-        opts.headers.setdefault('User-Agent', opts.user_agent)
+        opts.headers.setdefault('User-Agent', os.path.expandvars(opts.user_agent))
     if opts.referer is not None:
-        opts.headers.setdefault('Referer', opts.referer)
+        opts.headers.setdefault('Referer', os.path.expandvars(opts.referer))
 
     if opts.no_sponsorblock:
         opts.sponsorblock_mark = opts.sponsorblock_remove = set()
