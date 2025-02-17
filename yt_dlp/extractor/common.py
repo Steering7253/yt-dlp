@@ -860,7 +860,7 @@ class InfoExtractor:
         return url_or_request
 
     def _request_webpage(self, url_or_request, video_id, note=None, errnote=None, fatal=True, data=None,
-                         headers=None, query=None, expected_status=None, impersonate=None, require_impersonation=False):
+                         headers=None, query=None, expected_status=None, impersonate=None, require_impersonation=False, num_retries=0):
         """
         Return the response handle.
 
@@ -919,7 +919,13 @@ class InfoExtractor:
 
             errmsg = f'{errnote}: {err}'
             if fatal:
-                raise ExtractorError(errmsg, cause=err)
+                if num_retries < 3 and not (isinstance(err, HTTPError) and err.status >= 400 and err.status < 500):
+                    sleep_time = (5,10,30)[num_retries]
+                    self.report_warning(f'Retrying in {sleep_time} because of: {errmsg}')
+                    time.sleep(sleep_time)
+                    return self._request_webpage(url_or_request, video_id, note, errnote, fatal, data, headers, query, expected_status, impersonate, require_impersonation, num_retries+1)
+                else:
+                    raise ExtractorError(errmsg, cause=err)
             else:
                 self.report_warning(errmsg)
                 return False
