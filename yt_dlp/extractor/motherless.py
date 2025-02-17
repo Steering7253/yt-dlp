@@ -105,7 +105,7 @@ class MotherlessIE(InfoExtractor):
         if found_strings:
             raise ExtractorError(f'Video {video_id} does not exist ({found_strings})', expected=True)
 
-        if '>The content you are trying to view is for friends only.' in webpage:
+        if '>The content you are trying to view is for friends only' in webpage:
             raise ExtractorError(f'Video {video_id} is for friends only', expected=True)
 
         title = self._html_search_regex(
