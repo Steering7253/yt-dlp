@@ -96,6 +96,12 @@ class MotherlessIE(InfoExtractor):
         video_id = self._match_id(url)
         webpage = self._download_webpage(url, video_id)
 
+        if '>The content you are trying to view is for friends only' in webpage:
+            raise ExtractorError(f'Video {video_id} is for friends only', expected=True)
+
+        if 'The upload is subscriber only. You can subscribe to the member from their <' in webpage:
+            raise ExtractorError(f'Video {video_id} is for subscribers only', expected=True)
+
         found_strings = [p for p in (
                 '<title>404 - MOTHERLESS.COM<',
                 '<title>404 | MOTHERLESS.COM<',
@@ -104,9 +110,6 @@ class MotherlessIE(InfoExtractor):
                 '<div class="error-page') if p in webpage]
         if found_strings:
             raise ExtractorError(f'Video {video_id} does not exist ({found_strings})', expected=True)
-
-        if '>The content you are trying to view is for friends only' in webpage:
-            raise ExtractorError(f'Video {video_id} is for friends only', expected=True)
 
         title = self._html_search_regex(
             (r'(?s)<div[^>]+\bclass=["\']media-meta-title[^>]+>(.+?)</div>',
